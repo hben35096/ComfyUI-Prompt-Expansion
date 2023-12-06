@@ -94,19 +94,19 @@ class PromptExpansion:
             "required": {
                 "text": ("STRING", {"multiline": True}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xFFFFFFFF}),
-                "log_prompt": (["No", "Yes"], {"default": "No"}),
+                "add_prompt": (["No", "Yes"], {"default": "Yes"}),
             },
         }
 
     RETURN_TYPES = ("STRING", "INT",)
-    RETURN_NAMES = ("final_prompt", "seed",)
+    RETURN_NAMES = ("final_prompt_2", "seed",)
     FUNCTION = "expand_prompt"  # Function name
 
     CATEGORY = "utils"  # Category for organization
 
     @staticmethod
     @torch.no_grad()
-    def expand_prompt(text, seed, log_prompt):
+    def expand_prompt(text, seed, add_prompt):
         expansion = FooocusExpansion()
 
         prompt = remove_empty_str([safe_str(text)], default='')[0]
@@ -120,12 +120,13 @@ class PromptExpansion:
 
         expansion_text = expansion(prompt, seed)
         final_prompt = join_prompts(prompt, expansion_text)
+        
+        if add_prompt == "Yes":
+            final_prompt_2 = f"{prompt}\n{final_prompt}".strip()
+        else:
+            final_prompt_2 = prompt
 
-        if log_prompt == "Yes":
-            print(f"[Prompt Expansion] New suffix: {expansion_text}")
-            print(f"Final prompt: {final_prompt}")
-
-        return final_prompt, seed
+        return final_prompt_2, seed
 
 
 # Define a mapping of node class names to their respective classes
